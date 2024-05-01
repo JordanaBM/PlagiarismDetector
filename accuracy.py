@@ -161,11 +161,20 @@ def detectar_plagio(archivos):
     print(f"Accuracy: {accuracy:.2f}%")
 
 # Lista de pares de archivos a analizar
+carpeta = r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z1\Z1"
+
 archivos = [
-    (r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z1\Z1\student9358.c", r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z1\Z1\student2953.c"),
-    (r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z1\Z1\student7386.c", r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z1\Z1\student5378.c"),
+    (f"{carpeta}\student7386.c", f"{carpeta}\student5378.c"),
+    (f"{carpeta}\student2821.c", f"{carpeta}\student8295.c"),
+    (f"{carpeta}\student4934.c", f"{carpeta}\student6617.c"),
+    (f"{carpeta}\student8598.c", f"{carpeta}\student3331.c"),
+    (f"{carpeta}\student7888.c", f"{carpeta}\student7704.c"),
+    # (f"{carpeta}\student7386.c", f"{carpeta}\student5378.c"),
+    # (f"{carpeta}\student9358.c", f"{carpeta}\student2953.c"),
+    # (f"{carpeta}\student7386.c", f"{carpeta}\student5378.c"),
     # Agrega más pares de archivos según sea necesario
 ]
+
 
 # Llamar a la función para detectar plagio y calcular el accuracy
 detectar_plagio(archivos)
