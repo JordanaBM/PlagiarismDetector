@@ -1,157 +1,92 @@
-int main() {
-	double IP1, IIP1, P1, Z1, ZI1, IP2, IIP2, P2, Z2, ZI2, IP3, IIP3, P3, Z3, ZI3, O1, O2, O3;
-printf("Unesite bodove za Tarika: \n");
-	printf("I parcijalni ispit: ");
-	scanf("%lf",&IP1); 
-    if (IP1>20|| IP1<0) {
-	printf("Neispravan broj bodova"); 
-	return 0;}
-	else{
-	printf("II parcijalni ispit: ");
-	scanf("%lf",&IIP1); }
-	if (IIP1<0 || IIP1>20) {
-	printf("Neispravan broj bodova");
-		return 0;
-	}else{
-	printf("Prisustvo: ");
-	scanf("%lf",&P1);
-	if (P1<0 || P1>10) {
-	printf("Neispravan broj bodova"); 
-	return 0;
-	}else{ 
-	printf("Zadace: ");
-	scanf("%lf", &Z1);}
-	if (Z1<0|| Z1>10) {
-	printf("Neispravan broj bodova");
-	return 0;}
-	else{
-	printf("Zavrsni ispit: ");
-	scanf("%lf",&ZI1); }
-	if (ZI1<0 || ZI1>40) {
-	printf("Neispravan broj bodova"); 
-	return 0;}
-	else{
-		printf("Unesite bodove za Bojana:\n");
-	printf("I parcijalni ispit: ");
-	scanf("%lf",&IP2);} 
-    if (IP2>20|| IP2<0) {
-	printf("Neispravan broj bodova"); 
-	return 0;}
-	else{
-	printf("II parcijalni ispit: ");
-	scanf("%lf", &IIP2);}
-	if (IIP2<0|| IIP2>20) {
-	printf("Neispravan broj bodova"); 
-	return 0;}
-	else{
-	printf("Prisustvo: ");
-	scanf("%lf", &P2);}
-	if (P2<0|| P2>10) {
-	printf("Neispravan broj bodova");
-	return 0;}
-	else{
-	printf("Zadace: ");
-	scanf("%lf", &Z2);}
-	if (Z2<0|| Z2>10) {
-	printf("Neispravan broj bodova");
-	return 0;}
-	else{
-	printf("Zavrsni ispit: ");
-	scanf("%lf", &ZI2); }
-	if (ZI2<0|| ZI2>40) {
-	printf("Neispravan broj bodova"); return 0;}
-	else{
-	printf("Unesite bodove za Mirzu: \n");
-	printf("I parcijalni ispit: ");
-	scanf("%lf", &IP3);}
-    if (IP3>20|| IP3<0) {
-	printf("Neispravan broj bodova");
-	return 0;}
-	else{
-	printf("II parcijalni ispit: ");
-	scanf("%lf", &IIP3);}
-	if (IIP3<0 || IIP3>20) {
-	printf("Neispravan broj bodova");
-	return 0;}
-	else{
-	printf("Prisustvo: ");
-	scanf("%lf",&P3);}
-	if (P3<0|| P3>10) {
-	printf("Neispravan broj bodova");
-	return 0;}
-	else{
-	printf("Zadace: ");
-	scanf("%lf", &Z3);}
-	if (Z3<0|| Z3>10) {
-	printf("Neispravan broj bodova");
-	return 0;}
-	else{
-	printf("Zavrsni ispit: ");
-	scanf("%lf",&ZI3); }
-	if (ZI3<0|| ZI3>40) {
-	printf("Neispravan broj bodova");
-	return 0;}
-				
-			
-	
-	
-	if ((IP1+IIP1+Z1+P1+ZI1)<55 && (IP2+IIP2+Z2+P2+ZI2)<55 && (IP3+IIP3+Z3+P3+ZI3)<55) {
-		printf ("Nijedan student nije polozio. \n");
-	}
-	else if ((IP1+IIP1+Z1+P1+ZI1)>=55 && (IP2+IIP2+Z2+P2+ZI2)>=55 && (IP3+IIP3+Z3+P3+ZI3)>=55) {
-		printf ("Sva tri studenta su polozila.");
-		
-	}
-	else if (((IP1+IIP1+Z1+P1+ZI1)<55 && (IP2+IIP2+Z2+P2+ZI2)<55 && (IP3+IIP3+Z3+P3+ZI3)>=55) || ((IP1+IIP1+Z1+P1+ZI1)<55 && (IP2+IIP2+Z2+P2+ZI2)>=55 && (IP3+IIP3+Z3+P3+ZI3)<55) || ((IP1+IIP1+Z1+P1+ZI1)>=55 && (IP2+IIP2+Z2+P2+ZI2)<55 && (IP3+IIP3+Z3+P3+ZI3)<55))
-	{
-		printf("Jedan student je polozio.");
-	}
-	else if (((IP1+IIP1+Z1+P1+ZI1)>=55 && (IP2+IIP2+Z2+P2+ZI2)>=55 && (IP3+IIP3+Z3+P3+ZI3)<55) || ((IP1+IIP1+Z1+P1+ZI1)<55 && (IP2+IIP2+Z2+P2+ZI2)>=55 && (IP3+IIP3+Z3+P3+ZI3)>=55) || ((IP1+IIP1+Z1+P1+ZI1)>=55 && (IP2+IIP2+Z2+P2+ZI2)<55 && (IP3+IIP3+Z3+P3+ZI3)>=55))
-	{
-		printf("Dva studenta su polozila.");
-	}
-	
-	if ((IP1+IIP1+Z1+P1+ZI1)>=55 && (IP1+IIP1+Z1+P1+ZI1)<65) {
-		O1=6;
-	}else if ((IP1+IIP1+Z1+P1+ZI1)>=65 && (IP1+IIP1+Z1+P1+ZI1)<75){
-		O1=7;
-	}else if ((IP1+IIP1+Z1+P1+ZI1)>=75 && (IP1+IIP1+Z1+P1+ZI1)<85){
-		O1=8;
-	}else if ((IP1+IIP1+Z1+P1+ZI1)>=85 && (IP1+IIP1+Z1+P1+ZI1)<92){
-		O1=9;
-	}else if ((IP1+IIP1+Z1+P1+ZI1)>=92 && (IP1+IIP1+Z1+P1+ZI1)<=100){
-		O1=10;
-	}if ((IP2+IIP2+Z2+P2+ZI2)>=55 && (IP2+IIP2+Z2+P2+ZI2)<65) {
-		O2=6;
-	}else if ((IP2+IIP2+Z2+P2+ZI2)>=65 && (IP2+IIP2+Z2+P2+ZI2)<75){
-		O2=7;
-	}else if ((IP2+IIP2+Z2+P2+ZI2)>=75 && (IP2+IIP2+Z2+P2+ZI2)<85){
-		O2=8;
-	}else if ((IP2+IIP2+Z2+P2+ZI2)>=85 && (IP2+IIP2+Z2+P2+ZI2)<92){
-		O2=9;
-	}else if ((IP2+IIP2+Z2+P2+ZI2)>=92 && (IP2+IIP2+Z2+P2+ZI2)<=100){
-		O2=10;
-	}if ((IP3+IIP3+Z3+P3+ZI3)>=55 && (IP3+IIP3+Z3+P3+ZI3)<65) {
-		O3=6;
-	}else if ((IP3+IIP3+Z3+P3+ZI3)>=65 && (IP3+IIP3+Z3+P3+ZI3)<75){
-		O3=7;
-	}else if ((IP3+IIP3+Z3+P3+ZI3)>=75 && (IP3+IIP3+Z3+P3+ZI3)<85){
-		O3=8;
-	}else if ((IP3+IIP3+Z3+P3+ZI3)>=85 && (IP3+IIP3+Z3+P3+ZI3)<92){
-		O3=9;
-	}else if ((IP3+IIP3+Z3+P3+ZI3)>=92 && (IP3+IIP3+Z3+P3+ZI3)<=100){
-		O3=10;}
-	
-if((IP1+IIP1+Z1+P1+ZI1)>=55 && (IP2+IIP2+Z2+P2+ZI2)>=55 && (IP3+IIP3+Z3+P3+ZI3)>=55){
-	if (O1==O2 && O2==O3) {
-		printf("\nSva tri studenta imaju istu ocjenu.");
-	}else if (O1==O2 && O1!=O3 || O1==O3 && O1!=O2 || O2==O3 && O1!=O2) {
-		printf("\nDva od tri studenta imaju istu ocjenu.");
-	}else{ 
-		printf("\nSvaki student ima razlicitu ocjenu.");}}
-		return 0;
-}}
+int main()
+{
+    int Otarik,Obojan,Omirza;
+    double PPtarik,PPbojan,PPmirza,DPtarik,DPbojan,DPmirza,Ztarik,Zbojan,Zmirza,Ptarik,Pbojan,Pmirza,ZAtarik,ZAbojan,ZAmirza,Tarik=0,Mirza=0,Bojan=0;
+    printf("Unesite bodove za Tarika: \n");
+    printf("I parcijalni ispit: ");
+    scanf("%lf",&PPtarik);
+    if (PPtarik >20 || PPtarik < 0){ printf("Neispravan broj bodova"); return 0;}
+    printf("II parcijalni ispit: ");
+    scanf("%lf",&DPtarik);
+    if(DPtarik >20 || DPtarik<0) { printf("Neispravan broj bodova"); return 0;}
+    printf("Prisustvo: ");
+    scanf("%lf",&Ptarik);
+     if(Ptarik >10 || Ptarik <0) { printf("Neispravan broj bodova"); return 0;}
+    printf("Zadace: ");
+    scanf("%lf",&Ztarik);
+    if(Ztarik >10 || Ztarik <0) { printf("Neispravan broj bodova"); return 0;}
+    printf("Zavrsni ispit: ");
+    scanf("%lf",&ZAtarik);
+    if( ZAtarik>40 || ZAtarik<0) { printf("Neispravan broj bodova"); return 0;}
+    if ((PPtarik <=20 && PPtarik >= 0) && (DPtarik <= 20 && DPtarik >=0) && (Ztarik <=10 && Ztarik >=0) && (Ptarik <=10 && Ptarik >=0) && (ZAtarik<=40 && ZAtarik>=0) ) {
+        Tarik=PPtarik+DPtarik+Ztarik+Ptarik+ZAtarik;
+        if(Tarik>=55 &&Tarik<65) {Otarik=6;}
+   else     if(Tarik>=65 &&Tarik<75) {Otarik=7;}
+      else  if(Tarik>=75 && Tarik<85) {Otarik=8;}
+    else    if(Tarik>=85 && Tarik<92) {Otarik=9;}
+    else    if(Tarik>=92 && Tarik<=100){ Otarik=10;}
+    } 
+     printf("Unesite bodove za Bojana: \n");
+    printf("I parcijalni ispit: ");
+    scanf("%lf",&PPbojan);
+    if (PPbojan >20 || PPbojan < 0){ printf("Neispravan broj bodova"); return 0;}
+    printf("II parcijalni ispit: ");
+    scanf("%lf",&DPbojan);
+    if(DPbojan >20 || DPbojan<0) { printf("Neispravan broj bodova"); return 0;}
+    printf("Prisustvo: ");
+    scanf("%lf",&Pbojan);
+    if(Pbojan >10 || Pbojan <0) { printf("Neispravan broj bodova"); return 0;}
+    printf("Zadace: ");
+    scanf("%lf",&Zbojan);
+    if(Zbojan >10 || Zbojan <0) { printf("Neispravan broj bodova"); return 0;}
+    printf("Zavrsni ispit: ");
+    scanf("%lf",&ZAbojan);
+    if( ZAbojan>40 || ZAbojan<0) { printf("Neispravan broj bodova"); return 0;}
+    if (PPbojan <=20 && PPbojan >= 0 && DPbojan <=20 && DPbojan>=0 && Zbojan <=10 && Zbojan >=0 && Pbojan <=10 && Pbojan >=0 && ZAbojan<=40&&ZAbojan>=0 ) {
+        Bojan=PPbojan+DPbojan+Zbojan+Pbojan+ZAbojan;
+        if(Bojan>=55 && Bojan<65){ Obojan=6;}
+  else      if(Bojan>=65 && Bojan<75) {Obojan=7;}
+else        if(Bojan>=75 && Bojan<85) {Obojan=8;}
+    else    if(Bojan>=85 && Bojan<92) {Obojan=9;}
+    else    if(Bojan>=92 && Bojan<=100) {Obojan=10;}
+    } 
+    
+     printf("Unesite bodove za Mirzu: \n");
+    printf("I parcijalni ispit: ");
+    scanf("%lf",&PPmirza);
+     if (PPmirza >20 || PPmirza < 0){ printf("Neispravan broj bodova"); return 0;}
+    printf("II parcijalni ispit: ");
+    scanf("%lf",&DPmirza);
+      if(DPmirza >20 || DPmirza<0) { printf("Neispravan broj bodova"); return 0;}
+    printf("Prisustvo: ");
+    scanf("%lf",&Pmirza);
+     if(Pmirza >10 || Pmirza <0) { printf("Neispravan broj bodova"); return 0;}
+    printf("Zadace: ");
+    scanf("%lf",&Zmirza);
+     if(Zmirza >10 || Zmirza <0) { printf("Neispravan broj bodova"); return 0;}
+    printf("Zavrsni ispit: ");
+    scanf("%lf",&ZAmirza);
+     if( ZAmirza>40 || ZAmirza<0) { printf("Neispravan broj bodova"); return 0;}
+    if (PPmirza <=20 && PPmirza >=0 && DPmirza <=20 && DPmirza>=0 && Zmirza <=10 && Zmirza >=0 && Pmirza <=10 && Pmirza >=0 && ZAmirza<= 40 && ZAmirza>=0 ) {
+        Mirza=PPmirza+DPmirza+Zmirza+Pmirza+ZAmirza;
+        if(Mirza>=55 && Mirza<65){ Omirza=6;}
+     else   if(Mirza>=65 && Mirza<75) {Omirza=7;}
+    else    if(Mirza>=75 && Mirza<85) {Omirza=8;}
+    else    if(Mirza>=85 && Mirza<92) {Omirza=9;}
+    else    if(Mirza>=92 && Mirza<=100){ Omirza=10;}
+    } 
+        if (Tarik <55 && Mirza < 55 && Bojan <55) printf("Nijedan student nije polozio.\n");
+    else if (Tarik >=55 && Mirza <55 && Bojan <55) printf("Jedan student je polozio.\n");
+        else if(Tarik <55 && Mirza <55 && Bojan >=55) printf("Jedan student je polozio.\n");
+        else if(Tarik <55 && Mirza >=55 && Bojan <55) printf("Jedan student je polozio.\n");
+    else if(Tarik >=55 && Mirza >=55 && Bojan <55) printf("Dva studenta su polozila.\n");
+    else if(Tarik >=55 && Mirza <55 && Bojan >=55) printf("Dva studenta su polozila.\n");
+    else if(Tarik <55 && Mirza >=55 && Bojan >=55) printf("Dva studenta su polozila.\n");
+    else if(Tarik >=55 && Mirza >=55 && Bojan >=55){ printf("Sva tri studenta su polozila.\n");
 
-
-
-   
+    if ((Otarik==Omirza)&&(Otarik==Obojan)) printf("Sva tri studenta imaju istu ocjenu.\n");
+   else    if ((Otarik==Omirza)&&(Otarik!=Obojan)||((Otarik==Obojan)&&(Otarik!=Omirza))||((Omirza==Obojan)&&(Omirza!=Otarik))) printf("Dva od tri studenta imaju istu ocjenu.");
+    else  if((Otarik!=Omirza) && (Otarik !=Obojan) &&(Omirza!=Obojan) ) printf("Svaki student ima razlicitu ocjenu."); 
+    }
+    return 0;
+}
