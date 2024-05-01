@@ -418,58 +418,76 @@ def calculate_cyclomatic_complexity(graph):
     complexity = num_edges - num_nodes + 2 * num_components
     return complexity
 
-# Directorio donde se encuentran los archivos de código fuente
-source_directory = "/mnt/c/Users/Administrador/Downloads/ITESM/Clases/8to Semestre/Desarrollo de aplicaciones avanzadas de ciencias computacionales/PlagiarismDetector/Dataset_C/A2016/Z1/Z1/"
+def detect_plagiarism(files):
+    # Inicializar contadores de aciertos y errores
+    success = 0
+    error = 0
 
-# Nombres de los archivos de código fuente
-source_file1 = "student2821.c"
-source_file2 = "student8295.c"
+    # Crear la carpeta outputs si no existe
+    output_folder = "/mnt/c/Users/Administrador/Downloads/ITESM/Clases/8to Semestre/Desarrollo de aplicaciones avanzadas de ciencias computacionales/PlagiarismDetector/outputs"
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
-# Nombres de los archivos DOT de salida
-output_dot1 = source_file1[:-2]
-output_dot2 = source_file2[:-2]
-output_cleaned_file1 = "cleaned_" + source_file1
-output_cleaned_file2 = "cleaned_" + source_file2
+    # Para cada par de archivos en la lista de archivos
+    for pair in files:
+        # Par de archivos a procesar
+        source_file1 = pair[0]
+        source_file2 = pair[1]
 
-# Crear la carpeta outputs si no existe
-output_folder = os.path.join(source_directory, "outputs")
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
-    print(f"La carpeta 'outputs' ha sido creada en {source_directory}")
+        # Nombres de los archivos de salida
+        output_dot1 = "source_file1_"
+        output_dot2 = "source_file2_"
+        output_cleaned_file1 = "cleaned_source_file1.c"
+        output_cleaned_file2 = "cleaned_source_file2.c"
 
-# Generar archivos DOT para los archivos de código fuente en C
-generate_call_graph_c(os.path.join(source_directory, source_file1),os.path.join(output_folder, output_dot1))
-generate_call_graph_c(os.path.join(source_directory, source_file2), os.path.join(output_folder, output_dot2))
+        # Generar archivos DOT para los archivos de código fuente en C
+        generate_call_graph_c(source_file1, os.path.join(output_folder, output_dot1))
+        generate_call_graph_c(source_file2, os.path.join(output_folder, output_dot2))
 
-# Convertir los archivos DOT a matrices de adyacencia
-graph1, node_names1 = dot_to_adjacency_matrix(os.path.join(output_folder, output_dot1 + "0.dot"))
-graph2, node_names2 = dot_to_adjacency_matrix(os.path.join(output_folder, output_dot2 + "0.dot"))
+        # Convertir los archivos DOT a matrices de adyacencia
+        graph1, node_names1 = dot_to_adjacency_matrix(os.path.join(output_folder, output_dot1 + "0.dot"))
+        graph2, node_names2 = dot_to_adjacency_matrix(os.path.join(output_folder, output_dot2 + "0.dot"))
 
-# Eliminar los includes del archivo de entrada y guardar el resultado en el archivo limpio
-remove_comments_and_includes(os.path.join(source_directory, source_file1), os.path.join(output_folder, output_cleaned_file1))
-remove_comments_and_includes(os.path.join(source_directory, source_file2), os.path.join(output_folder, output_cleaned_file2))
+        # Eliminar los includes del archivo de entrada y guardar el resultado en el archivo limpio
+        remove_comments_and_includes(source_file1, os.path.join(output_folder, output_cleaned_file1))
+        remove_comments_and_includes(source_file2, os.path.join(output_folder, output_cleaned_file2))
 
-# Generar el AST del archivo limpio
-ast1 = parse_file(os.path.join(output_folder, output_cleaned_file1))
-ast2 = parse_file(os.path.join(output_folder, output_cleaned_file1))
+        # Generar el AST del archivo limpio
+        ast1 = parse_file(os.path.join(output_folder, output_cleaned_file1))
+        ast2 = parse_file(os.path.join(output_folder, output_cleaned_file1))
 
-# Calcular el kernel de caminata aleatoria modificada
-modified_kernel = modified_random_walk_kernel(graph1, graph2, node_names1, node_names2)
-print("Modified Graph Kernel:", modified_kernel)
+        # Calcular el kernel de caminata aleatoria modificada y el kernel del árbol de análisis sintáctico modificado
+        decay_factor = 0.9
+        modified_kernel = modified_random_walk_kernel(graph1, graph2, node_names1, node_names2)
+        modified_kernel_value = modified_parse_tree_kernel(ast1, ast2, decay_factor)
 
-# Calcular el kernel del árbol de análisis sintáctico modificado para los dos archivos
-decay_factor = 0.9
-modified_kernel_value = modified_parse_tree_kernel(ast1, ast2, decay_factor)
-print("Modified Parse Tree Kernel:", modified_kernel_value)
+        # Calcular similitud combinada utilizando un kernel compuesto
+        c1 = calculate_cyclomatic_complexity(graph1)
+        c2 = calculate_cyclomatic_complexity(graph2)
+        gamma = 1 / (1 + math.exp(-(min(c1, c2) - 25)))
+        composite_similarity = composite_kernel(modified_kernel_value, modified_kernel, gamma)
 
-# Calcular similitud combinada utilizando un kernel compuesto
-c1 = calculate_cyclomatic_complexity(graph1)
-c2 = calculate_cyclomatic_complexity(graph2)
-gamma = 1 / (1 + math.exp(-(min(c1, c2) - 25)))
-composite_similarity = composite_kernel(modified_kernel_value, modified_kernel, gamma)
+        # Calcular la similitud como porcentaje
+        similariy_pc = composite_similarity * 100
 
-# Impresión de similitud
-print("Similaridad [", source_file1, ",", source_file2, "] de:", round(composite_similarity, 4))
+        # Mostrar información de similitud y archivos
+        print("Archivos:", source_file1, ", ", source_file2)
+        print("Porcentaje de similitud: ", round(similariy_pc, 2), "%")
 
-# Eliminar el directorio outputs al finalizar
-shutil.rmtree(output_folder)
+        # Verificar si la similitud es mayor al umbral
+        if composite_similarity > 0.7:
+            success += 1
+        else:
+            error += 1
+
+    # Eliminar el directorio outputs al finalizar
+    shutil.rmtree(output_folder)
+
+    # Calcular el accuracy
+    total_files = len(files)
+    accuracy = (aciertos / total_archivos) * 100
+
+    print("Total de duplas de archivos analizados: ", total_files)
+    print("Aciertos: ", success)
+    print("Errores: ", error)
+    print("Accuracy: ", round(accuracy, 2), "%")
