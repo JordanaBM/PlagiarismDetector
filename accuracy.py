@@ -1,180 +1,213 @@
-import numpy as np
-from pycparser import parse_file
-import re
+from detector_plagio import detectar_plagio
 
-
-# Función para eliminar líneas de inclusión, comentarios y 'namespace' de un archivo C
-def eliminar_includes(input_file, output_file):
-    try:
-        with open(input_file, 'r') as file_in:
-            lines = file_in.readlines()
-
-        pattern = re.compile(r'^\s*(#include+.*)|(/\*[\s\S]*?\*/)|(//.*)')
-        filtered_lines = [line for line in lines if not pattern.match(line)]
-        filtered_lines = [line for line in filtered_lines if 'namespace' not in line]
-
-        with open(output_file, 'w') as file_out:
-            while filtered_lines[0] == '\n':
-              filtered_lines.pop(0)
-            file_out.writelines(filtered_lines)
-
-    except FileNotFoundError:
-        print(f"Error: No se encontró el archivo '{input_file}'.")
-    except Exception as e:
-        print(f"Error al procesar el archivo: {e}")
-
-# Función para convertir el AST a una representación de cadena
-def ast_to_string(node, indent=0):
-    if node is None:
-        return ""
-    node_type = node.__class__.__name__
-    node_str = f"{' ' * indent}{node_type}\n"
-    for attr_name, attr_value in node.children():
-        child_str = ast_to_string(attr_value, indent + 4)
-        node_str += f"{' ' * (indent + 2)}{attr_name}:\n{child_str}"
-    return node_str
-
-
-def generate_dictionary(string, dictionary):
-    # Divide la cadena en palabras individuales
-    my_arr = string.split()
-    index = 0
-    # Para cada palabra en la cadena
-    for word in my_arr:
-        # Si la palabra no está en el diccionario
-        if word not in dictionary:
-            # Asigna un índice único a la palabra en el diccionario
-            dictionary[word] = index
-            index += 1
-
-def generate_following_tokens(string):
-    # Divide la cadena en palabras individuales
-    my_arr = string.split()
-    following_tokens = {}
-    # Para cada índice i en el rango de la longitud de la lista menos 1
-    for i in range(len(my_arr) - 1):
-        current_token = my_arr[i]
-        next_token = my_arr[i + 1]
-        # Si el token actual no está en el diccionario de tokens siguientes
-        if current_token not in following_tokens:
-            # Crea una lista vacía para almacenar los siguientes tokens
-            following_tokens[current_token] = []
-        # Agrega el siguiente token a la lista de tokens siguientes del token actual
-        following_tokens[current_token].append(next_token)
-
-    return following_tokens
-
-def initialize_matrix(size):
-    # Inicializa una matriz cuadrada de tamaño 'size' con ceros
-    return np.zeros((size, size))
-
-def transition_matrix_from_string(string, max_size):
-    dictionary = {}
-    # Genera un diccionario de tokens a partir de la cadena
-    generate_dictionary(string, dictionary)
-    # Genera un diccionario de tokens siguientes a partir de la cadena
-    following_tokens = generate_following_tokens(string)
-
-    size = max_size
-    # Inicializa una matriz de transición con ceros
-    matrix = initialize_matrix(size)
-
-    # Para cada token y su lista de tokens siguientes en el diccionario de tokens siguientes
-    for token, following in following_tokens.items():
-        # Calcula la probabilidad de transición de un token a sus tokens siguientes
-        prob = 1 / len(following)
-        i = dictionary[token]
-
-        # Para cada token siguiente
-        for x in following:
-            j = dictionary[x]
-            # Incrementa la entrada correspondiente en la matriz de transición
-            matrix[i][j] += prob
-
-    return matrix
-
-def cosine_similarity(A, B):
-    # Calcula la similitud coseno entre dos matrices A y B
-    BT = np.transpose(B)
-    C = np.dot(BT, A)
-    normA = np.linalg.norm(A)
-    normB = np.linalg.norm(B)
-    similarity = np.trace(C) / (normA * normB)
-
-    return similarity
-
-def detectar_plagio(archivos):
-    # Inicializar variables para contadores de aciertos y errores
-    aciertos = 0
-    errores = 0
-
-    # Para cada par de archivos en la lista de archivos
-    for par in archivos:
-        archivo_seleccionado_1 = par[0]
-        archivo_seleccionado_2 = par[1]
-
-        # Llamada a la función para eliminar las líneas de inclusión de los archivos seleccionados
-        eliminar_includes(archivo_seleccionado_1, "exit_1.c")
-        eliminar_includes(archivo_seleccionado_2, "exit_2.c")
-
-        # Parsear el código C en un AST
-        ast_1 = parse_file("exit_1.c", use_cpp=True, cpp_path=r'C:\MinGW\bin\cpp.exe')
-        ast_2 = parse_file("exit_2.c", use_cpp=True, cpp_path=r'C:\MinGW\bin\cpp.exe')
-
-        # Convertir el AST a una representación de cadena
-        ast_string_1 = ast_to_string(ast_1)
-        ast_string_2 = ast_to_string(ast_2)
-
-        # Calcular max_size
-        max_size = max(len(set(ast_string_1.split())), len(set(ast_string_2.split())))
-
-        # Generar las matrices de transición para las cadenas de texto
-        matrix1 = transition_matrix_from_string(ast_string_1, max_size)
-        matrix2 = transition_matrix_from_string(ast_string_2, max_size)
-
-        # Calcular la similitud coseno entre las matrices
-        similarity = cosine_similarity(matrix1, matrix2)
-
-        # Definir umbral de similitud para considerar como plagio
-        umbral_similitud = 70
-
-        # Calcular la similitud como porcentaje
-        similitud_porcentaje = similarity * 100
-
-        # Mostrar información de similitud y archivos
-        print(f"Archivos: {archivo_seleccionado_1}, {archivo_seleccionado_2}")
-        print(f"Porcentaje de similitud: {similitud_porcentaje:.2f}%\n")
-
-        # Verificar si la similitud es mayor al umbral
-        if similitud_porcentaje > umbral_similitud:
-            aciertos += 1
-        else:
-            errores += 1
-
-    # Calcular el accuracy
-    total_archivos = len(archivos)
-    accuracy = (aciertos / total_archivos) * 100
-
-    print(f"\nTotal de archivos analizados: {total_archivos}")
-    print(f"Aciertos: {aciertos}")
-    print(f"Errores: {errores}")
-    print(f"Accuracy: {accuracy:.2f}%")
-
-# Lista de pares de archivos a analizar
+# Lista de carpetas a analizar
 carpeta = r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z1\Z1"
+carpeta2 = r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z1\Z2"
+carpeta3 = r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z1\Z3"
+carpeta4 = r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z1\Z4"
 
+carpeta5 = r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z2\Z1"
+carpeta6 = r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z2\Z2"
+carpeta7 = r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z2\Z3"
+carpeta8 = r"C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\Dataset_C\A2016\Z2\Z4"
+
+#Lista de pares de archivos plagiados
 archivos = [
-    (f"{carpeta}\student7386.c", f"{carpeta}\student5378.c"),
-    (f"{carpeta}\student2821.c", f"{carpeta}\student8295.c"),
-    (f"{carpeta}\student4934.c", f"{carpeta}\student6617.c"),
-    (f"{carpeta}\student8598.c", f"{carpeta}\student3331.c"),
-    (f"{carpeta}\student7888.c", f"{carpeta}\student7704.c"),
-    # (f"{carpeta}\student7386.c", f"{carpeta}\student5378.c"),
-    # (f"{carpeta}\student9358.c", f"{carpeta}\student2953.c"),
-    # (f"{carpeta}\student7386.c", f"{carpeta}\student5378.c"),
-    # Agrega más pares de archivos según sea necesario
+     # Carpeta 1 - A2016/Z1/Z1
+    (f"{carpeta}\\student7386.c", f"{carpeta}\\student5378.c"),
+    (f"{carpeta}\\student2821.c", f"{carpeta}\\student8295.c"),
+    (f"{carpeta}\\student4934.c", f"{carpeta}\\student6617.c"),
+    (f"{carpeta}\\student8598.c", f"{carpeta}\\student3331.c"),
+    (f"{carpeta}\\student7888.c", f"{carpeta}\\student7704.c"),
+    (f"{carpeta}\\student4959.c", f"{carpeta}\\student1482.c"),
+    (f"{carpeta}\\student2939.c", f"{carpeta}\\student9949.c"),
+    (f"{carpeta}\\student5512.c", f"{carpeta}\\student4852.c"),
+    (f"{carpeta}\\student9160.c", f"{carpeta}\\student7443.c"),
+    (f"{carpeta}\\student8357.c", f"{carpeta}\\student6877.c"),
+    (f"{carpeta}\\student2086.c", f"{carpeta}\\student7173.c"),
+    (f"{carpeta}\\student5789.c", f"{carpeta}\\student5673.c"),
+    (f"{carpeta}\\student9358.c", f"{carpeta}\\student2953.c"),
+    (f"{carpeta}\\student9498.c", f"{carpeta}\\student8796.c"),
+    (f"{carpeta}\\student6776.c", f"{carpeta}\\student9805.c"),
+   
+    # Carpeta 2 - A2016/Z1/Z2
+    (f"{carpeta2}\\student4124.c", f"{carpeta2}\\student9538.c"),
+    (f"{carpeta2}\\student8598.c", f"{carpeta2}\\student3331.c"),
+    (f"{carpeta2}\\student9498.c", f"{carpeta2}\\student8796.c"),
+    (f"{carpeta2}\\student7888.c", f"{carpeta2}\\student7704.c"),
+    (f"{carpeta2}\\student6534.c", f"{carpeta2}\\student5381.c"),
+    (f"{carpeta2}\\student4959.c", f"{carpeta2}\\student1482.c"),
+    (f"{carpeta2}\\student2939.c", f"{carpeta2}\\student9949.c"),
+    (f"{carpeta2}\\student2821.c", f"{carpeta2}\\student4155.c"),
+    (f"{carpeta2}\\student5512.c", f"{carpeta2}\\student4852.c"),
+    (f"{carpeta2}\\student1326.c", f"{carpeta2}\\student1624.c"),
+    (f"{carpeta2}\\student8187.c", f"{carpeta2}\\student3631.c"),
+    (f"{carpeta2}\\student6054.c", f"{carpeta2}\\student7341.c"),
+    (f"{carpeta2}\\student9160.c", f"{carpeta2}\\student7443.c"),
+    (f"{carpeta2}\\student1120.c", f"{carpeta2}\\student5226.c"),
+
+    # Carpeta 3 - A2016/Z1/Z3
+    (f"{carpeta3}\\student7386.c", f"{carpeta3}\\student5378.c"),
+    (f"{carpeta3}\\student2821.c", f"{carpeta3}\\student8295.c"),
+    (f"{carpeta3}\\student4155.c", f"{carpeta3}\\student2197.c"),
+    (f"{carpeta3}\\student8598.c", f"{carpeta3}\\student3331.c"),
+    (f"{carpeta3}\\student5573.c", f"{carpeta3}\\student9498.c"),
+    (f"{carpeta3}\\student4420.c", f"{carpeta3}\\student6617.c"),
+    (f"{carpeta3}\\student4059.c", f"{carpeta3}\\student7704.c"),
+    (f"{carpeta3}\\student6534.c", f"{carpeta3}\\student4934.c"),
+    (f"{carpeta3}\\student2925.c", f"{carpeta3}\\student4280.c"),
+    (f"{carpeta3}\\student4959.c", f"{carpeta3}\\student1482.c"),
+    (f"{carpeta3}\\student2939.c", f"{carpeta3}\\student9949.c"),
+    (f"{carpeta3}\\student5512.c", f"{carpeta3}\\student4852.c"),
+    (f"{carpeta3}\\student1326.c", f"{carpeta3}\\student3560.c"),
+    (f"{carpeta3}\\student4863.c", f"{carpeta3}\\student5380.c"),
+    (f"{carpeta3}\\student9821.c", f"{carpeta3}\\student8133.c"),
+    (f"{carpeta3}\\student3424.c", f"{carpeta3}\\student3756.c"),
+    (f"{carpeta3}\\student7495.c", f"{carpeta3}\\student5741.c"),
+    (f"{carpeta3}\\student1466.c", f"{carpeta3}\\student1266.c"),
+    (f"{carpeta3}\\student6054.c", f"{carpeta3}\\student7341.c"),
+    (f"{carpeta3}\\student9805.c", f"{carpeta3}\\student8357.c"),
+    (f"{carpeta3}\\student5581.c", f"{carpeta3}\\student8089.c"),
+    (f"{carpeta3}\\student3350.c", f"{carpeta3}\\student4226.c"),
+    (f"{carpeta3}\\student2831.c", f"{carpeta3}\\student4343.c"),
+    (f"{carpeta3}\\student3567.c", f"{carpeta3}\\student1453.c"),
+    (f"{carpeta3}\\student5170.c", f"{carpeta3}\\student8540.c"),
+
+    # Carpeta 4 - A2016/Z1/Z4
+    (f"{carpeta4}\\student2821.c", f"{carpeta4}\\student8295.c"),
+    (f"{carpeta4}\\student8598.c", f"{carpeta4}\\student3331.c"),
+    (f"{carpeta4}\\student7888.c", f"{carpeta4}\\student7704.c"),
+    (f"{carpeta4}\\student6534.c", f"{carpeta4}\\student6617.c"),
+    (f"{carpeta4}\\student2925.c", f"{carpeta4}\\student5381.c"),
+    (f"{carpeta4}\\student4959.c", f"{carpeta4}\\student1482.c"),
+    (f"{carpeta4}\\student2939.c", f"{carpeta4}\\student9949.c"),
+    (f"{carpeta4}\\student4124.c", f"{carpeta4}\\student9538.c"),
+    (f"{carpeta4}\\student5512.c", f"{carpeta4}\\student4852.c"),
+    (f"{carpeta4}\\student1266.c", f"{carpeta4}\\student9931.c"),
+    (f"{carpeta4}\\student3424.c", f"{carpeta4}\\student1845.c"),
+    (f"{carpeta4}\\student6054.c", f"{carpeta4}\\student7341.c"),
+    (f"{carpeta4}\\student6776.c", f"{carpeta4}\\student1483.c"),
+    (f"{carpeta4}\\student8357.c", f"{carpeta4}\\student4934.c"),
+    (f"{carpeta4}\\student7123.c", f"{carpeta4}\\student2142.c"),
+    (f"{carpeta4}\\student3671.c", f"{carpeta4}\\student7802.c"),
+    (f"{carpeta4}\\student9160.c", f"{carpeta4}\\student7443.c"),
+    (f"{carpeta4}\\student1188.c", f"{carpeta4}\\student8199.c"),
+    (f"{carpeta4}\\student2887.c", f"{carpeta4}\\student9805.c"),
+    (f"{carpeta4}\\student2806.c", f"{carpeta4}\\student4108.c"),
+    (f"{carpeta4}\\student5899.c", f"{carpeta4}\\student7255.c"),
+    (f"{carpeta4}\\student3856.c", f"{carpeta4}\\student4100.c"),
+
+    #Carpeta 5 - A2016/Z2/Z1
+    (f"{carpeta5}\\student7386.c", f"{carpeta5}\\student5380.c"),
+    (f"{carpeta5}\\student8192.c", f"{carpeta5}\\student2736.c"),
+    (f"{carpeta5}\\student1616.c", f"{carpeta5}\\student8886.c"),
+    (f"{carpeta5}\\student3421.c", f"{carpeta5}\\student9296.c"),
+    (f"{carpeta5}\\student5612.c", f"{carpeta5}\\student5581.c"),
+    (f"{carpeta5}\\student7956.c", f"{carpeta5}\\student7697.c"),
+    (f"{carpeta5}\\student2925.c", f"{carpeta5}\\student2821.c"),
+    (f"{carpeta5}\\student9949.c", f"{carpeta5}\\student2939.c"),
+    (f"{carpeta5}\\student3717.c", f"{carpeta5}\\student2508.c"),
+    (f"{carpeta5}\\student3425.c", f"{carpeta5}\\student1639.c"),
+    (f"{carpeta5}\\student9160.c", f"{carpeta5}\\student2526.c"),
+    (f"{carpeta5}\\student1120.c", f"{carpeta5}\\student5624.c"),
+    (f"{carpeta5}\\student7888.c", f"{carpeta5}\\student6617.c"),
+    (f"{carpeta5}\\student8598.c", f"{carpeta5}\\student5573.c"),
+    (f"{carpeta5}\\student9931.c", f"{carpeta5}\\student5961.c"),
+    (f"{carpeta5}\\student2437.c", f"{carpeta5}\\student5636.c"),
+    (f"{carpeta5}\\student8199.c", f"{carpeta5}\\student4100.c"),
+
+    #Carpeta 6 - A2016/Z2/Z2
+     (f"{carpeta6}\\student7386.c", f"{carpeta6}\\student6999.c"),
+    (f"{carpeta6}\\student8192.c", f"{carpeta6}\\student2736.c"),
+    (f"{carpeta6}\\student9538.c", f"{carpeta6}\\student3631.c"),
+    (f"{carpeta6}\\student5581.c", f"{carpeta6}\\student5612.c"),
+    (f"{carpeta6}\\student2406.c", f"{carpeta6}\\student8067.c"),
+    (f"{carpeta6}\\student1616.c", f"{carpeta6}\\student8886.c"),
+    (f"{carpeta6}\\student3421.c", f"{carpeta6}\\student9296.c"),
+    (f"{carpeta6}\\student8796.c", f"{carpeta6}\\student8598.c"),
+    (f"{carpeta6}\\student7956.c", f"{carpeta6}\\student4043.c"),
+    (f"{carpeta6}\\student3717.c", f"{carpeta6}\\student2508.c"),
+    (f"{carpeta6}\\student3425.c", f"{carpeta6}\\student1639.c"),
+    (f"{carpeta6}\\student3315.c", f"{carpeta6}\\student1453.c"),
+    (f"{carpeta6}\\student1120.c", f"{carpeta6}\\student5624.c"),
+    (f"{carpeta6}\\student2513.c", f"{carpeta6}\\student6364.c"),
+    (f"{carpeta6}\\student7888.c", f"{carpeta6}\\student5660.c"),
+    (f"{carpeta6}\\student9931.c", f"{carpeta6}\\student5961.c"),
+    (f"{carpeta6}\\student2160.c", f"{carpeta6}\\student6960.c"),
+    (f"{carpeta6}\\student6594.c", f"{carpeta6}\\student4682.c"),
+    (f"{carpeta6}\\student4934.c", f"{carpeta6}\\student3386.c"),
+    (f"{carpeta6}\\student1772.c", f"{carpeta6}\\student5268.c"),
+    (f"{carpeta6}\\student1237.c", f"{carpeta6}\\student4100.c"),
+    (f"{carpeta6}\\student2953.c", f"{carpeta6}\\student1649.c"),
+    (f"{carpeta6}\\student1738.c", f"{carpeta6}\\student9569.c"),
+    (f"{carpeta6}\\student4185.c", f"{carpeta6}\\student2585.c"),
+    (f"{carpeta6}\\student5298.c", f"{carpeta6}\\student1200.c"),
+    (f"{carpeta6}\\student4322.c", f"{carpeta6}\\student6010.c"),
+    (f"{carpeta6}\\student3136.c", f"{carpeta6}\\student6705.c"),
+    (f"{carpeta6}\\student2157.c", f"{carpeta6}\\student6516.c"),
+    (f"{carpeta6}\\student5611.c", f"{carpeta6}\\student2967.c"),
+
+    #Carpeta 7 - A2016/Z2/Z3
+     (f"{carpeta7}\\student7386.c", f"{carpeta7}\\student7888.c"),
+    (f"{carpeta7}\\student8192.c", f"{carpeta7}\\student8957.c"),
+    (f"{carpeta7}\\student1845.c", f"{carpeta7}\\student3594.c"),
+    (f"{carpeta7}\\student3560.c", f"{carpeta7}\\student9473.c"),
+    (f"{carpeta7}\\student8069.c", f"{carpeta7}\\student2526.c"),
+    (f"{carpeta7}\\student3421.c", f"{carpeta7}\\student9160.c"),
+    (f"{carpeta7}\\student7255.c", f"{carpeta7}\\student8089.c"),
+    (f"{carpeta7}\\student4420.c", f"{carpeta7}\\student8043.c"),
+    (f"{carpeta7}\\student1616.c", f"{carpeta7}\\student8886.c"),
+    (f"{carpeta7}\\student6743.c", f"{carpeta7}\\student5789.c"),
+    (f"{carpeta7}\\student1477.c", f"{carpeta7}\\student4082.c"),
+    (f"{carpeta7}\\student8796.c", f"{carpeta7}\\student5573.c"),
+    (f"{carpeta7}\\student5612.c", f"{carpeta7}\\student5581.c"),
+    (f"{carpeta7}\\student4949.c", f"{carpeta7}\\student1482.c"),
+    (f"{carpeta7}\\student8753.c", f"{carpeta7}\\student8520.c"),
+    (f"{carpeta7}\\student3425.c", f"{carpeta7}\\student1639.c"),
+    (f"{carpeta7}\\student6054.c", f"{carpeta7}\\student5380.c"),
+    (f"{carpeta7}\\student3315.c", f"{carpeta7}\\student1453.c"),
+    (f"{carpeta7}\\student1120.c", f"{carpeta7}\\student5624.c"),
+    (f"{carpeta7}\\student2513.c", f"{carpeta7}\\student6364.c"),
+    (f"{carpeta7}\\student9931.c", f"{carpeta7}\\student5961.c"),
+    (f"{carpeta7}\\student8199.c", f"{carpeta7}\\student4100.c"),
+    (f"{carpeta7}\\student5512.c", f"{carpeta7}\\student8864.c"),
+    (f"{carpeta7}\\student6594.c", f"{carpeta7}\\student4682.c"),
+    (f"{carpeta7}\\student4770.c", f"{carpeta7}\\student5899.c"),
+    (f"{carpeta7}\\student9498.c", f"{carpeta7}\\student7911.c"),
+    (f"{carpeta7}\\student2953.c", f"{carpeta7}\\student1649.c"),
+    (f"{carpeta7}\\student1738.c", f"{carpeta7}\\student9569.c"),
+    (f"{carpeta7}\\student5298.c", f"{carpeta7}\\student1200.c"),
+    (f"{carpeta7}\\student2508.c", f"{carpeta7}\\student1313.c"),
+    (f"{carpeta7}\\student4322.c", f"{carpeta7}\\student7616.c"),
+    (f"{carpeta7}\\student4108.c", f"{carpeta7}\\student7173.c"),
+    (f"{carpeta7}\\student4554.c", f"{carpeta7}\\student8560.c"),
+    (f"{carpeta7}\\student4473.c", f"{carpeta7}\\student6516.c"),
+
+    #Carpeta 8 - A2016/Z2/Z4
+    (f"{carpeta8}\\student2956.c", f"{carpeta8}\\student5284.c"),
+    (f"{carpeta8}\\student1616.c", f"{carpeta8}\\student8886.c"),
+    (f"{carpeta8}\\student3421.c", f"{carpeta8}\\student4059.c"),
+    (f"{carpeta8}\\student3756.c", f"{carpeta8}\\student8598.c"),
+    (f"{carpeta8}\\student8796.c", f"{carpeta8}\\student7888.c"),
+    (f"{carpeta8}\\student5573.c", f"{carpeta8}\\student4420.c"),
+    (f"{carpeta8}\\student5612.c", f"{carpeta8}\\student3631.c"),
+    (f"{carpeta8}\\student6054.c", f"{carpeta8}\\student5380.c"),
+    (f"{carpeta8}\\student1120.c", f"{carpeta8}\\student5624.c"),
+    (f"{carpeta8}\\student2513.c", f"{carpeta8}\\student6364.c"),
+    (f"{carpeta8}\\student2508.c", f"{carpeta8}\\student2340.c"),
+    (f"{carpeta8}\\student8199.c", f"{carpeta8}\\student4100.c"),
+    (f"{carpeta8}\\student9476.c", f"{carpeta8}\\student7180.c"),
+    (f"{carpeta8}\\student5298.c", f"{carpeta8}\\student1200.c"),
+    (f"{carpeta8}\\student5355.c", f"{carpeta8}\\student4644.c"),
+    (f"{carpeta8}\\student6743.c", f"{carpeta8}\\student5263.c"),
+    (f"{carpeta8}\\student1029.c", f"{carpeta8}\\student2585.c"),
+    (f"{carpeta8}\\student6877.c", f"{carpeta8}\\student8357.c"),
+    (f"{carpeta8}\\student5659.c", f"{carpeta8}\\student6516.c"),
+    (f"{carpeta8}\\student5829.c", f"{carpeta8}\\student4415.c"),
+    (f"{carpeta8}\\student5611.c", f"{carpeta8}\\student2967.c"),
+    (f"{carpeta8}\\student8892.c", f"{carpeta8}\\student7678.c"),
+
 ]
 
-
-# Llamar a la función para detectar plagio y calcular el accuracy
+#Llamo a la función detectar plagio para ver la accuracy total
 detectar_plagio(archivos)
