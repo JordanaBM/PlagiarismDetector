@@ -1,5 +1,6 @@
 import os
 from kernel import detect_plagiarism
+from detector_plagio import detectar_plagio
 
 current_directory = os.getcwd()
 
@@ -212,5 +213,69 @@ files = [
 
 ]
 
+no_plagiarism = [
+    # A2016/Z1/Z1 vs A2016/Z2/Z1
+    (os.path.join(Z1_Z1, "student1013.c"), os.path.join(Z2_Z1, "student2335.c")),
+    (os.path.join(Z1_Z1, "student1263.c"), os.path.join(Z2_Z1, "student2371.c")),
+    (os.path.join(Z1_Z1, "student1494.c"), os.path.join(Z2_Z1, "student3610.c")),
+    (os.path.join(Z1_Z1, "student2086.c"), os.path.join(Z2_Z1, "student4852.c")),
+    (os.path.join(Z1_Z1, "student2111.c"), os.path.join(Z2_Z1, "student5659.c")),
+    (os.path.join(Z1_Z1, "student2142.c"), os.path.join(Z2_Z1, "student6029.c")),
+    (os.path.join(Z1_Z1, "student2340.c"), os.path.join(Z2_Z1, "student6042.c")),
+    (os.path.join(Z1_Z1, "student3856.c"), os.path.join(Z2_Z1, "student4526.c")),
+    (os.path.join(Z1_Z1, "student4647.c"), os.path.join(Z2_Z1, "student7258.c")),
+    (os.path.join(Z1_Z1, "student5713.c"), os.path.join(Z2_Z1, "student8085.c")),
+   
+    # A2016/Z1/Z2 vs A2016/Z2/Z4
+    (os.path.join(Z1_Z2, "student1013.c"), os.path.join(Z2_Z4, "student1616.c")),
+    (os.path.join(Z1_Z2, "student1477.c"), os.path.join(Z2_Z4, "student2421.c")),
+    (os.path.join(Z1_Z2, "student2351.c"), os.path.join(Z2_Z4, "student3415.c")),
+    (os.path.join(Z1_Z2, "student4128.c"), os.path.join(Z2_Z4, "student3535.c")),
+    (os.path.join(Z1_Z2, "student4659.c"), os.path.join(Z2_Z4, "student4628.c")),
+    (os.path.join(Z1_Z2, "student5624.c"), os.path.join(Z2_Z4, "student5412.c")),
+    (os.path.join(Z1_Z2, "student6410.c"), os.path.join(Z2_Z4, "student6550.c")),
+    (os.path.join(Z1_Z2, "student7320.c"), os.path.join(Z2_Z4, "student7507.c")),
+    (os.path.join(Z1_Z2, "student8133.c"), os.path.join(Z2_Z4, "student8139.c")),
+    (os.path.join(Z1_Z2, "student9095.c"), os.path.join(Z2_Z4, "student9385.c")),
+
+    # A2016/Z1/Z4 vs A2016/Z2/Z3
+    (os.path.join(Z1_Z4, "student1981.c"), os.path.join(Z2_Z3, "student2213.c")),
+    (os.path.join(Z1_Z4, "student2111.c"), os.path.join(Z2_Z3, "student3133.c")),
+    (os.path.join(Z1_Z4, "student3900.c"), os.path.join(Z2_Z3, "student3790.c")),
+    (os.path.join(Z1_Z4, "student3610.c"), os.path.join(Z2_Z3, "student4628.c")),
+    (os.path.join(Z1_Z4, "student8264.c"), os.path.join(Z2_Z3, "student5581.c")),
+    (os.path.join(Z1_Z4, "student8317.c"), os.path.join(Z2_Z3, "student5636.c")),
+    (os.path.join(Z1_Z4, "student9676.c"), os.path.join(Z2_Z3, "student6604.c")),
+    (os.path.join(Z1_Z4, "student9972.c"), os.path.join(Z2_Z3, "student8006.c")),
+    (os.path.join(Z1_Z4, "student7258.c"), os.path.join(Z2_Z3, "student8029.c")),
+    (os.path.join(Z1_Z4, "student7193.c"), os.path.join(Z2_Z3, "student1269.c")),
+
+    # A2016/Z1/Z3 vs A2016/Z2/Z2
+    (os.path.join(Z1_Z3, "student2247.c"), os.path.join(Z2_Z2, "student9998.c")),
+    (os.path.join(Z1_Z3, "student2967.c"), os.path.join(Z2_Z2, "student8780.c")),
+    (os.path.join(Z1_Z3, "student4059.c"), os.path.join(Z2_Z2, "student8029.c")),
+    (os.path.join(Z1_Z3, "student3717.c"), os.path.join(Z2_Z2, "student7425.c")),
+    (os.path.join(Z1_Z3, "student5122.c"), os.path.join(Z2_Z2, "student6960.c")),
+    (os.path.join(Z1_Z3, "student6913.c"), os.path.join(Z2_Z2, "student6516.c")),
+    (os.path.join(Z1_Z3, "student8192.c"), os.path.join(Z2_Z2, "student5863.c")),
+    (os.path.join(Z1_Z3, "student8043.c"), os.path.join(Z2_Z2, "student5172.c")),
+    (os.path.join(Z1_Z3, "student8964.c"), os.path.join(Z2_Z2, "student4150.c")),
+    (os.path.join(Z1_Z3, "student4888.c"), os.path.join(Z2_Z2, "student2925.c")),
+    (os.path.join(Z1_Z3, "student2821.c"), os.path.join(Z2_Z2, "student1981.c")),
+
+    # A2016/Z2/Z1 vs A2016/Z2/Z4
+    (os.path.join(Z2_Z1, "student1938.c"), os.path.join(Z2_Z4, "student9972.c")),
+    (os.path.join(Z2_Z1, "student1624.c"), os.path.join(Z2_Z4, "student8665.c")),
+    (os.path.join(Z2_Z1, "student2675.c"), os.path.join(Z2_Z4, "student7755.c")),
+    (os.path.join(Z2_Z1, "student3411.c"), os.path.join(Z2_Z4, "student7085.c")),
+    (os.path.join(Z2_Z1, "student4412.c"), os.path.join(Z2_Z4, "student5789.c")),
+    (os.path.join(Z2_Z1, "student4959.c"), os.path.join(Z2_Z4, "student4863.c")),
+    (os.path.join(Z2_Z1, "student5660.c"), os.path.join(Z2_Z4, "student3841.c")),
+    (os.path.join(Z2_Z1, "student6357.c"), os.path.join(Z2_Z4, "student2941.c")),
+    (os.path.join(Z2_Z1, "student9029.c"), os.path.join(Z2_Z4, "student2477.c")),
+    (os.path.join(Z2_Z1, "student9601.c"), os.path.join(Z2_Z4, "student1649.c")),
+
+]
+
 #Llamo a kernel.py para ver la accuracy total
-detect_plagiarism(files)
+detectar_plagio(no_plagiarism)
