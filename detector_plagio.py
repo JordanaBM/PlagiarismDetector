@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from pycparser import parse_file
 import re
@@ -118,8 +119,9 @@ def detectar_plagio(archivos):
         eliminar_includes(archivo_seleccionado_2, "exit_2.c")
 
         # Parsear el código C en un AST
-        ast_1 = parse_file(r'C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\exit_1.c', use_cpp=True, cpp_path=r'C:\MinGW\bin\cpp.exe')
-        ast_2 = parse_file(r'C:\Users\jordi\Escritorio\DetectorPlagio\PlagiarismDetector\exit_2.c', use_cpp=True, cpp_path=r'C:\MinGW\bin\cpp.exe')
+        current_directory = os.getcwd()
+        ast_1 = parse_file(os.path.join(current_directory, "exit_1.c"), use_cpp=True, cpp_path=r'C:\MinGW\bin\cpp.exe')
+        ast_2 = parse_file(os.path.join(current_directory, "exit_2.c"), use_cpp=True, cpp_path=r'C:\MinGW\bin\cpp.exe')
 
         # Convertir el AST a una representación de cadena
         ast_string_1 = ast_to_string(ast_1)
