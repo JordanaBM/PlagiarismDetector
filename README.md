@@ -16,6 +16,11 @@
 
 <h1 align="center">Análisis de similitud entre archivos de código en C</h1>
 
+## Dataset
+
+El Dataset utilizado fue el [siguiente](https://drive.google.com/drive/folders/1YruqwHxyq_UnMFYW_G828Nm9lqZur9M4?usp=sharing), sustraido de [PROGRAMMING HOMEWORK DATASET FOR PLAGIARISM DETECTION](https://ieee-dataport.org/open-access/programming-homework-dataset-plagiarism-detection)
+ 
+
 ## Pasos previos para ejecutar el código
 
 ### Para Windows
@@ -215,6 +220,7 @@ En el contexto del análisis de código fuente, el cálculo de la similitud cose
 
 7. **Comparación con umbral de similitud:** Compara la similitud calculada con un umbral predefinido para determinar si los archivos son similares o no. Si la similitud es mayor al umbral, se considera que hay plagio.
 ---
+
 
 
 
